@@ -2,10 +2,12 @@ package com.counter.app
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
+import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import androidx.core.net.toUri
 import com.counter.app.ReelAppConfig.ReelAppData
 import com.counter.app.data.CounterDatabase
 import com.counter.app.data.ReelCount
@@ -39,6 +41,17 @@ class ReelCountingService : AccessibilityService() {
     private val lastDynamicText = mutableMapOf<String, String>()
     private val recentCaptions = mutableMapOf<String, MutableSet<String>>()
     private val perAppCounts = mutableMapOf<String, Int>()
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        if (!overlayManager.hasPermission()) {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                "package:$packageName".toUri()
+            ).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+            startActivity(intent)
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
