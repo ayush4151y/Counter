@@ -2,7 +2,6 @@ package com.counter.app
 
 import android.content.Context
 import android.graphics.PixelFormat
-import android.provider.Settings
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -18,10 +17,6 @@ class ReelOverlayManager(private val context: Context) {
     var isVisible = false
         private set
 
-    private var initialX = 0
-    private var initialY = 0
-    private var offsetX = 0f
-    private var offsetY = 0f
     private var lastCount = -1
 
     private val params: WindowManager.LayoutParams by lazy {
@@ -29,7 +24,7 @@ class ReelOverlayManager(private val context: Context) {
         WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -41,36 +36,32 @@ class ReelOverlayManager(private val context: Context) {
         }
     }
 
-    fun hasPermission(): Boolean =
-        Settings.canDrawOverlays(context)
-
     fun show(count: Int) {
-        if (!hasPermission()) return
-        if (overlayView != null && isVisible) {
-            if (count != lastCount) {
-                binding?.reelCounterText?.text = count.toString()
-                lastCount = count
-            }
-            return
-        }
+        if (overlayView != null || isVisible) return
 
         binding = OverlayReelCounterBinding.inflate(LayoutInflater.from(context))
         overlayView = binding?.root
-        binding?.reelCounterText?.text = count.toString()
+        isVisible = true
         lastCount = count
+        binding?.reelCounterText?.text = count.toString()
+
+        var initX = 0
+        var initY = 0
+        var offsetX = 0f
+        var offsetY = 0f
 
         overlayView?.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    initialX = params.x
-                    initialY = params.y
+                    initX = params.x
+                    initY = params.y
                     offsetX = event.rawX
                     offsetY = event.rawY
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    params.x = initialX + (event.rawX - offsetX).toInt()
-                    params.y = initialY + (event.rawY - offsetY).toInt()
+                    params.x = initX + (event.rawX - offsetX).toInt()
+                    params.y = initY + (event.rawY - offsetY).toInt()
                     windowManager?.updateViewLayout(overlayView, params)
                     true
                 }
@@ -81,7 +72,6 @@ class ReelOverlayManager(private val context: Context) {
 
         windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager?.addView(overlayView, params)
-        isVisible = true
     }
 
     fun updateCount(count: Int) {
