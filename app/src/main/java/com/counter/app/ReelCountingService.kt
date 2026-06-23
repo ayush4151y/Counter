@@ -34,6 +34,8 @@ class ReelCountingService : AccessibilityService() {
     private var screenHeight = 0
     private var totalToday = 0
 
+    private var currentReelPkg: String? = null
+
     private val lastDynamicText = mutableMapOf<String, String>()
     private val recentCaptions = mutableMapOf<String, MutableSet<String>>()
     private val perAppCounts = mutableMapOf<String, Int>()
@@ -65,13 +67,16 @@ class ReelCountingService : AccessibilityService() {
 
         val pkg = event.packageName?.toString() ?: return
         val config = ReelAppConfig.reelData[pkg] ?: run {
-            overlayManager.hide()
+            if (currentReelPkg != null) {
+                currentReelPkg = null
+                overlayManager.hide()
+            }
             return
         }
         if ((event.eventType and config.eventType) == 0) return
 
         val root = rootInActiveWindow ?: return
-        var isReel = false
+        var reelFound = false
 
         try {
             var reelContainer: AccessibilityNodeInfo? = null
@@ -101,7 +106,7 @@ class ReelCountingService : AccessibilityService() {
             }
 
             reelContainer.recycle()
-            isReel = true
+            reelFound = true
 
             var currentText = ""
             for (compId in config.dynamicComparatorIds) {
@@ -120,11 +125,10 @@ class ReelCountingService : AccessibilityService() {
             Log.w(TAG, "Error processing event", e)
         } finally {
             root.recycle()
-            if (isReel) {
+            if (reelFound) {
+                currentReelPkg = pkg
                 if (!overlayManager.isVisible) overlayManager.show(totalToday)
                 else overlayManager.updateCount(totalToday)
-            } else {
-                overlayManager.hide()
             }
         }
     }
