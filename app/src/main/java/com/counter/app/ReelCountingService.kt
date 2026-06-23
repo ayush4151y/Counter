@@ -28,18 +28,20 @@ class ReelCountingService : AccessibilityService() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var database: CounterDatabase
+    private lateinit var overlayManager: ReelOverlayManager
 
     private var screenWidth = 0
     private var screenHeight = 0
+    private var totalToday = 0
 
     private val lastDynamicText = mutableMapOf<String, String>()
     private val recentCaptions = mutableMapOf<String, MutableSet<String>>()
     private val perAppCounts = mutableMapOf<String, Int>()
-    private val totalCounts = mutableMapOf<String, Int>()
 
     override fun onCreate() {
         super.onCreate()
         database = CounterDatabase.getInstance(this)
+        overlayManager = ReelOverlayManager(this)
         val displayMetrics = DisplayMetrics()
         val display = (getSystemService(DISPLAY_SERVICE) as? android.hardware.display.DisplayManager)
             ?.getDisplay(0)
@@ -53,6 +55,7 @@ class ReelCountingService : AccessibilityService() {
                 val saved = database.reelCountDao().getCount(today, pkg)
                 perAppCounts[pkg] = saved?.count ?: 0
             }
+            totalToday = ReelAppConfig.reelData.keys.sumOf { perAppCounts[it] ?: 0 }
             broadcastUpdate()
         }
     }
@@ -61,10 +64,14 @@ class ReelCountingService : AccessibilityService() {
         if (event == null || (event.eventType and TARGET_EVENTS) == 0) return
 
         val pkg = event.packageName?.toString() ?: return
-        val config = ReelAppConfig.reelData[pkg] ?: return
+        val config = ReelAppConfig.reelData[pkg] ?: run {
+            overlayManager.hide()
+            return
+        }
         if ((event.eventType and config.eventType) == 0) return
 
         val root = rootInActiveWindow ?: return
+        var isReel = false
 
         try {
             var reelContainer: AccessibilityNodeInfo? = null
@@ -94,6 +101,7 @@ class ReelCountingService : AccessibilityService() {
             }
 
             reelContainer.recycle()
+            isReel = true
 
             var currentText = ""
             for (compId in config.dynamicComparatorIds) {
@@ -112,6 +120,12 @@ class ReelCountingService : AccessibilityService() {
             Log.w(TAG, "Error processing event", e)
         } finally {
             root.recycle()
+            if (isReel) {
+                if (!overlayManager.isVisible) overlayManager.show(totalToday)
+                else overlayManager.updateCount(totalToday)
+            } else {
+                overlayManager.hide()
+            }
         }
     }
 
@@ -133,6 +147,7 @@ class ReelCountingService : AccessibilityService() {
         lastDynamicText[pkg] = currentText
         val newCount = (perAppCounts[pkg] ?: 0) + 1
         perAppCounts[pkg] = newCount
+        totalToday++
 
         scope.launch {
             val today = getTodayDate()
@@ -144,6 +159,8 @@ class ReelCountingService : AccessibilityService() {
             }
             broadcastUpdate()
         }
+
+        overlayManager.updateCount(totalToday)
     }
 
     private fun cleanText(node: AccessibilityNodeInfo, cleanser: ((String) -> String)?): String {
@@ -189,6 +206,7 @@ class ReelCountingService : AccessibilityService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        overlayManager.hide()
         scope.cancel()
     }
 }
