@@ -59,13 +59,13 @@ object NodeFinder {
                     if (node.text?.toString() != value) return false
                 }
                 "textContains" -> {
-                    if (!node.text?.toString()?.contains(value, true) == true) return false
+                    if (node.text?.toString()?.contains(value, true) != true) return false
                 }
                 "desc" -> {
                     if (node.contentDescription?.toString() != value) return false
                 }
                 "descContains" -> {
-                    if (!node.contentDescription?.toString()?.contains(value, true) == true) return false
+                    if (node.contentDescription?.toString()?.contains(value, true) != true) return false
                 }
             }
         }
