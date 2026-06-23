@@ -59,7 +59,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         when (pkg) {
             "com.instagram.android" -> instagramCount.postValue(count)
             "com.google.android.youtube" -> youtubeCount.postValue(count)
-            "com.facebook.katana" -> youtubeCount.postValue(count)
+            "com.facebook.katana" -> facebookCount.postValue(count)
             "com.facebook.orca" -> facebookCount.postValue(count)
         }
         viewModelScope.launch {

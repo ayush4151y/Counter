@@ -3,7 +3,7 @@ package com.counter.app
 object ReelAppConfig {
 
     data class ReelAppData(
-        val viewId: String,
+        val viewIds: List<String>,
         val requiresPresent: List<String> = emptyList(),
         val requiresAbsent: List<String> = emptyList(),
         val dynamicComparatorIds: List<String> = emptyList(),
@@ -14,16 +14,21 @@ object ReelAppConfig {
     val reelData: Map<String, ReelAppData> = mapOf(
 
         "com.instagram.android" to ReelAppData(
-            viewId = "id:com.instagram.android:id/clips_viewer_view_pager",
-            requiresPresent = listOf("id:com.instagram.android:id/clips_ufi_component"),
+            viewIds = listOf(
+                "id:com.instagram.android:id/clips_viewer_view_pager",
+                "id:com.instagram.android:id/reel_viewer_container",
+                "desc:Double tap to like"
+            ),
+            requiresPresent = listOf("desc:Like"),
             dynamicComparatorIds = listOf(
                 "id:com.instagram.android:id/clips_captions_component",
-                "id:com.instagram.android:id/clips_author_username"
+                "id:com.instagram.android:id/clips_author_username",
+                "desc:Double tap to like"
             )
         ),
 
         "com.google.android.youtube" to ReelAppData(
-            viewId = "id:com.google.android.youtube:id/reel_recycler",
+            viewIds = listOf("id:com.google.android.youtube:id/reel_recycler"),
             dynamicComparatorIds = listOf("id:com.google.android.youtube:id/reel_player_page_content"),
             cleanser = { text ->
                 if (text.contains("PostPostPostlike")) return@ReelAppData ""
@@ -38,23 +43,36 @@ object ReelAppConfig {
         ),
 
         "com.facebook.katana" to ReelAppData(
-            viewId = "desc:Tap to show video controls",
+            viewIds = listOf(
+                "desc:Tap to show video controls",
+                "textContains:Reel"
+            ),
+            requiresPresent = listOf("textContains:Reel"),
             dynamicComparatorIds = listOf(
-                "path:android.widget.FrameLayout[0]>android.view.ViewGroup[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[0]>android.view.ViewGroup[0]>android.widget.Button[0]>android.view.ViewGroup[2]",
-                "path:android.widget.HorizontalScrollView[0]>androidx.viewpager.widget.ViewPager[0]>android.view.ViewGroup[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[0]>android.view.ViewGroup[0]>android.widget.Button[0]>android.view.ViewGroup[2]>android.view.ViewGroup[0]>android.view.ViewGroup[0]"
+                "desc:Tap to show video controls",
+                "textContains:Reel"
             ),
             cleanser = { text ->
                 text.replace("Story trayCreate storyCreate storyCreate storyClose import contactsFacebook is better with friendsFacebook is better with friendsSee stories from friends by adding people you know from your contacts.See stories from friends by adding people you know from your contacts.Find friends through contacts", "")
+                    .replace("Story", "")
+                    .replace("Create story", "")
             }
         ),
 
         "com.facebook.orca" to ReelAppData(
-            viewId = "desc:Tap to show video controls",
+            viewIds = listOf(
+                "desc:Tap to show video controls",
+                "textContains:Reel"
+            ),
+            requiresPresent = listOf("textContains:Reel"),
             dynamicComparatorIds = listOf(
-                "path:android.widget.FrameLayout[0]>android.view.ViewGroup[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[0]>android.view.ViewGroup[0]>android.widget.Button[0]>android.view.ViewGroup[2]"
+                "desc:Tap to show video controls",
+                "textContains:Reel"
             ),
             cleanser = { text ->
                 text.replace("Story trayCreate storyCreate storyCreate storyClose import contactsFacebook is better with friendsFacebook is better with friends", "")
+                    .replace("Story", "")
+                    .replace("Create story", "")
             }
         )
     )

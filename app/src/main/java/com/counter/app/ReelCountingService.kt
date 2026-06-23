@@ -67,7 +67,11 @@ class ReelCountingService : AccessibilityService() {
         val root = rootInActiveWindow ?: return
 
         try {
-            val reelContainer = NodeFinder.findFirst(root, config.viewId)
+            var reelContainer: AccessibilityNodeInfo? = null
+            for (vid in config.viewIds) {
+                reelContainer = NodeFinder.findFirst(root, vid)
+                if (reelContainer != null) break
+            }
             if (reelContainer == null) return
 
             if (!NodeFinder.isOnScreen(reelContainer, screenWidth, screenHeight)) {
