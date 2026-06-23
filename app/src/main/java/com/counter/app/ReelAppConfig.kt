@@ -8,7 +8,7 @@ object ReelAppConfig {
         val requiresAbsent: List<String> = emptyList(),
         val dynamicComparatorIds: List<String> = emptyList(),
         val cleanser: ((String) -> String)? = null,
-        val eventType: Int = android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+        val eventType: Int = android.view.accessibility.AccessibilityEvent.TYPE_VIEW_SCROLLED
     )
 
     val reelData: Map<String, ReelAppData> = mapOf(
