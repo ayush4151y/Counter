@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Reel Counter</string>
+    <string name="accessibility_service_description">Reel Counter uses AccessibilityService to count short-form videos (Reels, Shorts) on Instagram, YouTube, and Facebook.</string>
+    <string name="reels_today">Reels Today</string>
+    <string name="service_status">Service Status</string>
+    <string name="service_active">Active</string>
+    <string name="service_inactive">Inactive — Tap to enable in Settings</string>
+    <string name="enable_service">Enable Accessibility Service</string>
+    <string name="total_reels">Total Reels</string>
+    <string name="app_instagram">Instagram</string>
+    <string name="app_youtube">YouTube</string>
+    <string name="app_facebook">Facebook</string>
+</resources>
