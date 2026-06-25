@@ -89,20 +89,20 @@ class ReelCountingService : AccessibilityService() {
                 if (reelContainer != null) break
             }
             if (reelContainer == null) {
-                hideIfInReel()
+                if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) hideIfInReel()
                 return
             }
 
             if (!NodeFinder.isOnScreen(reelContainer, screenWidth, screenHeight)) {
                 reelContainer.recycle()
-                hideIfInReel()
+                if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) hideIfInReel()
                 return
             }
 
             for (req in config.requiresPresent) {
                 if (!NodeFinder.exists(root, req)) {
                     reelContainer.recycle()
-                    hideIfInReel()
+                    if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) hideIfInReel()
                     return
                 }
             }
@@ -110,7 +110,7 @@ class ReelCountingService : AccessibilityService() {
             for (req in config.requiresAbsent) {
                 if (NodeFinder.exists(root, req)) {
                     reelContainer.recycle()
-                    hideIfInReel()
+                    if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) hideIfInReel()
                     return
                 }
             }
@@ -127,7 +127,7 @@ class ReelCountingService : AccessibilityService() {
             }
 
             if (currentText.isBlank()) {
-                hideIfInReel()
+                if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) hideIfInReel()
                 return
             }
 
