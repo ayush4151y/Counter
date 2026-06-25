@@ -80,12 +80,6 @@ class ReelCountingService : AccessibilityService() {
         }
         if ((event.eventType and config.eventType) == 0) return
 
-        hideJob?.cancel()
-        currentReelPkg = pkg
-        if (!overlayManager.isVisible) {
-            overlayManager.show(totalToday)
-        }
-
         val root = rootInActiveWindow ?: return
 
         try {
@@ -94,16 +88,21 @@ class ReelCountingService : AccessibilityService() {
                 reelContainer = NodeFinder.findFirst(root, vid)
                 if (reelContainer != null) break
             }
-            if (reelContainer == null) return
+            if (reelContainer == null) {
+                hideIfInReel()
+                return
+            }
 
             if (!NodeFinder.isOnScreen(reelContainer, screenWidth, screenHeight)) {
                 reelContainer.recycle()
+                hideIfInReel()
                 return
             }
 
             for (req in config.requiresPresent) {
                 if (!NodeFinder.exists(root, req)) {
                     reelContainer.recycle()
+                    hideIfInReel()
                     return
                 }
             }
@@ -111,6 +110,7 @@ class ReelCountingService : AccessibilityService() {
             for (req in config.requiresAbsent) {
                 if (NodeFinder.exists(root, req)) {
                     reelContainer.recycle()
+                    hideIfInReel()
                     return
                 }
             }
@@ -126,7 +126,16 @@ class ReelCountingService : AccessibilityService() {
                 }
             }
 
-            if (currentText.isBlank()) return
+            if (currentText.isBlank()) {
+                hideIfInReel()
+                return
+            }
+
+            hideJob?.cancel()
+            if (currentReelPkg == null) {
+                overlayManager.show(totalToday)
+            }
+            currentReelPkg = pkg
 
             detectNewReel(pkg, currentText)
 
@@ -134,6 +143,17 @@ class ReelCountingService : AccessibilityService() {
             Log.w(TAG, "Error processing event", e)
         } finally {
             root.recycle()
+        }
+    }
+
+    private fun hideIfInReel() {
+        if (currentReelPkg != null) {
+            currentReelPkg = null
+            hideJob?.cancel()
+            hideJob = scope.launch {
+                delay(1000)
+                overlayManager.hide()
+            }
         }
     }
 
