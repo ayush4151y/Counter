@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="12dp">
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/reelLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/reels_tracked"
+        android:textAllCaps="true"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:alpha="0.7"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/reelCounterText"
@@ -15,4 +30,16 @@
         android:textStyle="bold"
         android:background="@drawable/overlay_circle_bg" />
 
-</FrameLayout>
+    <TextView
+        android:id="@+id/reelUnit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/reels"
+        android:textAllCaps="true"
+        android:textColor="#FFFFFF"
+        android:textSize="10sp"
+        android:alpha="0.5"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</LinearLayout>

@@ -1,7 +1,12 @@
 package com.counter.app
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.PixelFormat
+import android.net.Uri
+import android.provider.Settings
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -10,6 +15,9 @@ import android.view.WindowManager
 import com.counter.app.databinding.OverlayReelCounterBinding
 
 class ReelOverlayManager(private val context: Context) {
+    companion object {
+        const val TAG = "ReelOverlayManager"
+    }
 
     private var overlayView: View? = null
     private var binding: OverlayReelCounterBinding? = null
@@ -24,7 +32,7 @@ class ReelOverlayManager(private val context: Context) {
         WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -36,14 +44,26 @@ class ReelOverlayManager(private val context: Context) {
         }
     }
 
+    @SuppressLint("InflateParams", "ClickableViewAccessibility")
     fun show(count: Int) {
         if (overlayView != null || isVisible) return
+        if (!Settings.canDrawOverlays(context)) {
+            Log.w(TAG, "SYSTEM_ALERT_WINDOW permission not granted, cannot show overlay")
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:${context.packageName}")
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+            return
+        }
 
         binding = OverlayReelCounterBinding.inflate(LayoutInflater.from(context))
         overlayView = binding?.root
         isVisible = true
         lastCount = count
+        binding?.reelLabel?.visibility = View.VISIBLE
         binding?.reelCounterText?.text = count.toString()
+        binding?.reelUnit?.visibility = View.VISIBLE
 
         var initX = 0
         var initY = 0
@@ -77,7 +97,9 @@ class ReelOverlayManager(private val context: Context) {
     fun updateCount(count: Int) {
         if (count == lastCount) return
         lastCount = count
+        binding?.reelLabel?.visibility = View.VISIBLE
         binding?.reelCounterText?.text = count.toString()
+        binding?.reelUnit?.visibility = View.VISIBLE
     }
 
     fun hide() {

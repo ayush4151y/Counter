@@ -11,4 +11,6 @@
     <string name="app_instagram">Instagram</string>
     <string name="app_youtube">YouTube</string>
     <string name="app_facebook">Facebook</string>
+    <string name="reels_tracked">REELS TRACKED</string>
+    <string name="reels">reels</string>
 </resources>

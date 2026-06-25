@@ -3,6 +3,7 @@ package com.counter.app
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
@@ -54,6 +55,25 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateServiceStatus()
+        checkOverlayPermission()
+    }
+
+    private fun checkOverlayPermission() {
+        if (!Settings.canDrawOverlays(this)) {
+            AlertDialog.Builder(this)
+                .setTitle("Display Overlay Permission")
+                .setMessage("Reel Counter needs \"Display over other apps\" permission to show the reel count overlay. Please grant it.")
+                .setPositiveButton("Grant") { _, _ ->
+                    startActivity(
+                        Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:$packageName")
+                        )
+                    )
+                }
+                .setNegativeButton("Later", null)
+                .show()
+        }
     }
 
     private fun updateServiceStatus() {

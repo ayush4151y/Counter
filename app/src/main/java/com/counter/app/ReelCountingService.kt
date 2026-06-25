@@ -35,6 +35,7 @@ class ReelCountingService : AccessibilityService() {
     private var totalToday = 0
 
     private var currentReelPkg: String? = null
+    private var hideJob: Job? = null
 
     private val lastDynamicText = mutableMapOf<String, String>()
     private val recentCaptions = mutableMapOf<String, MutableSet<String>>()
@@ -69,12 +70,17 @@ class ReelCountingService : AccessibilityService() {
         val config = ReelAppConfig.reelData[pkg] ?: run {
             if (currentReelPkg != null) {
                 currentReelPkg = null
-                overlayManager.hide()
+                hideJob?.cancel()
+                hideJob = scope.launch {
+                    delay(3000)
+                    overlayManager.hide()
+                }
             }
             return
         }
         if ((event.eventType and config.eventType) == 0) return
 
+        hideJob?.cancel()
         currentReelPkg = pkg
         if (!overlayManager.isVisible) {
             overlayManager.show(totalToday)
